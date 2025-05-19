@@ -1,114 +1,204 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { useEffect, useState } from "react";
+import Head from "next/head";
+import * as Storage from "@web3-storage/w3up-client";
+import styles from "../styles/Home.module.css";
 
 export default function Home() {
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [ownerUCAN, setOwnerUCAN] = useState(null);
+  const [client, setClient] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Initialize Storacha client when component mounts
+  useEffect(() => {
+    const initializeClient = async () => {
+      try {
+        const storageClient = await Storage.create();
+        await storageClient.setCurrentSpace(
+          "did:key:z6MkvFMX7yhT1i8wEuDm5m17m6r3Kgr2RfikJFz618YMmwu"
+        );
+        setClient(storageClient);
+        console.log(
+          "Client initialized, space set to:",
+          storageClient.spaces[0]?.did()
+        );
+      } catch (err) {
+        console.error("Error initializing Storacha client:", err);
+        setError("Failed to initialize storage client");
+      }
+    };
+
+    initializeClient();
+  }, []);
+
+  const handleFileChange = (e) => {
+    if (e.target.files.length > 0) {
+      const selectedFile = e.target.files[0];
+      if (selectedFile.type === "application/pdf") {
+        setFile(selectedFile);
+        setError(null);
+      } else {
+        setError("Please select a PDF file");
+        setFile(null);
+      }
+    }
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+
+    if (!file) {
+      setError("Please select a file to upload");
+      return;
+    }
+
+    if (!client) {
+      setError("Storage client not initialized");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Upload file directly to Storacha
+      const rootCID = await client.uploadFile(file);
+      console.log("Upload successful, CID:", rootCID);
+
+      setUploadResult({
+        cid: rootCID.toString(),
+        filename: file.name,
+        size: file.size,
+        type: file.type,
+        url: `https://w3s.link/ipfs/${rootCID}`,
+      });
+
+      // Generate owner UCAN
+      // This is a simplified example - in a real app, you would store this securely
+      // and integrate with your backend for proper delegation
+      const delegation = await client.createDelegation({
+        with: client.spaces[0].did(),
+        abilities: ["storacha/upload", "storacha/download", "storacha/delete"],
+        expiration: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
+      });
+
+      const serializedUCAN = await delegation.archive();
+      setOwnerUCAN(serializedUCAN.toString("base64"));
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError("Failed to upload file: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className={styles.container}>
+      <Head>
+        <title>ShareBox - UCAN File Sharing</title>
+        <meta name="description" content="Securely share files with UCANs" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
+      <main className={styles.main}>
+        <h1 className={styles.title}>
+          Welcome to <span className={styles.highlight}>ShareBox</span>
+        </h1>
+
+        <p className={styles.description}>
+          Upload files and share them with specific permissions using UCANs
+        </p>
+
+        <div className={styles.card}>
+          <h2>Upload a File</h2>
+          {error && <p className={styles.error}>{error}</p>}
+
+          <form onSubmit={handleUpload} className={styles.form}>
+            <div className={styles.fileInput}>
+              <label htmlFor="file">Select a PDF file:</label>
+              <input
+                type="file"
+                id="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className={styles.button}
+              disabled={!file || loading}
+            >
+              {loading ? "Uploading..." : "Upload File"}
+            </button>
+          </form>
         </div>
+
+        {uploadResult && (
+          <div className={styles.result}>
+            <h2>Upload Successful!</h2>
+            <p>
+              <strong>File:</strong> {uploadResult.filename}
+            </p>
+            <p>
+              <strong>Type:</strong> {uploadResult.type}
+            </p>
+            <p>
+              <strong>Size:</strong> {Math.round(uploadResult.size / 1024)} KB
+            </p>
+            <p>
+              <strong>CID:</strong> {uploadResult.cid}
+            </p>
+            <p>
+              <a
+                href={uploadResult.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                View on IPFS Gateway
+              </a>
+            </p>
+          </div>
+        )}
+
+        {ownerUCAN && (
+          <div className={styles.ucanSection}>
+            <h2>Owner UCAN Token</h2>
+            <p>
+              This is your owner UCAN token that grants full access to this
+              file:
+            </p>
+            <div className={styles.ucanDisplay}>
+              <textarea
+                readOnly
+                value={ownerUCAN}
+                className={styles.ucanTextarea}
+                rows={5}
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(ownerUCAN);
+                }}
+                className={styles.copyButton}
+              >
+                Copy UCAN
+              </button>
+            </div>
+            <p className={styles.info}>
+              <strong>Note:</strong> In a production app, you would not display
+              the raw UCAN, but instead securely store it and use it to generate
+              delegated UCANs for sharing.
+            </p>
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className={styles.footer}>
+        <p>Powered by Storacha</p>
       </footer>
     </div>
   );
