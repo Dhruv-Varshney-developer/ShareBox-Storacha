@@ -16,14 +16,7 @@ export default function Home() {
     const initializeClient = async () => {
       try {
         const storageClient = await Storage.create();
-        await storageClient.setCurrentSpace(
-          "did:key:z6MkvFMX7yhT1i8wEuDm5m17m6r3Kgr2RfikJFz618YMmwu"
-        );
-        setClient(storageClient);
-        console.log(
-          "Client initialized, space set to:",
-          storageClient.spaces[0]?.did()
-        );
+        setClient(storageClient)
       } catch (err) {
         console.error("Error initializing Storacha client:", err);
         setError("Failed to initialize storage client");
