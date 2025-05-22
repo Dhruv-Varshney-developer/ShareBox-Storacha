@@ -1,6 +1,5 @@
 import formidable from "formidable";
 import fs from "fs";
-import { File } from "@web3-storage/w3up-client";
 import { initStorachaClient, uploadFileToStoracha } from "../../lib/storacha";
 import { validateFile } from "../../utils/fileHelpers";
 
@@ -23,8 +22,8 @@ export default async function handler(req, res) {
     // Parse the multipart form data
     const form = formidable({
       keepExtensions: true,
-      uploadDir: '/tmp', // Ensure we have a proper upload directory
-      createDirsFromUploads: true // Create directories if they don't exist
+      uploadDir: "/tmp", // Ensure we have a proper upload directory
+      createDirsFromUploads: true, // Create directories if they don't exist
     });
 
     const [fields, files] = await new Promise((resolve, reject) => {
@@ -35,21 +34,23 @@ export default async function handler(req, res) {
     });
 
     // Get the uploaded file
-    const uploadedFile = files.file;
+    let uploadedFile = files.file;
+    if (Array.isArray(uploadedFile)) {
+        uploadedFile = uploadedFile[0];
+      }
     if (!uploadedFile) {
       return res.status(400).json({
         success: false,
         error: "No file uploaded",
       });
     }
-
     // Validate file structure
     if (!uploadedFile.filepath) {
       console.error("Invalid file structure:", uploadedFile);
       return res.status(400).json({
         success: false,
         error: "Invalid file upload structure",
-        details: "The uploaded file is missing required properties"
+        details: "The uploaded file is missing required properties",
       });
     }
 
@@ -57,12 +58,13 @@ export default async function handler(req, res) {
     let fileContent;
     try {
       fileContent = fs.readFileSync(uploadedFile.filepath);
+
     } catch (readError) {
       console.error("Error reading file:", readError);
       return res.status(500).json({
         success: false,
         error: "Failed to read uploaded file",
-        details: readError.message
+        details: readError.message,
       });
     }
 
@@ -103,10 +105,9 @@ export default async function handler(req, res) {
     let errorMessage = "Upload failed";
     if (error.message.includes("ENOENT")) {
       errorMessage = "File not found or access denied";
-    } else if (error.message.includes("maxFileSize")) {
-      errorMessage = "File size exceeds 10MB limit";
     } else if (error.message.includes("Storacha client")) {
-      errorMessage = "Failed to initialize storage client. Please check environment variables.";
+      errorMessage =
+        "Failed to initialize storage client. Please check environment variables.";
     } else if (error.message.includes("upload file")) {
       errorMessage = "Failed to upload to storage service";
     }
