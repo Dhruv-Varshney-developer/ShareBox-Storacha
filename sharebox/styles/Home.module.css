@@ -183,3 +183,89 @@
   font-size: 0.9rem;
   color: #666;
 }
+
+.globalError {
+  background-color: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.resultGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.resultItem {
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.cidSection {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.cidHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.cidText {
+  display: block;
+  word-break: break-all;
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+  color: #495057;
+  background-color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.copyButton {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.copyButton:hover {
+  background-color: #5a6268;
+}
+
+.linkSection {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.linkSection .link {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.linkSection .link:hover {
+  background-color: #0056b3;
+}
