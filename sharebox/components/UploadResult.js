@@ -24,10 +24,6 @@ export default function UploadResult({ result }) {
         </div>
 
         <div className={styles.resultItem}>
-          <strong>Type:</strong> {result.type}
-        </div>
-
-        <div className={styles.resultItem}>
           <strong>Size:</strong> {formatFileSize(result.size)}
         </div>
 
@@ -40,15 +36,10 @@ export default function UploadResult({ result }) {
       <div className={styles.cidSection}>
         <div className={styles.cidHeader}>
           <strong>Content ID (CID):</strong>
-          <button
-            onClick={() => handleCopyClick(result.cid)}
-            className={styles.copyButton}
-            title="Copy CID"
-          >
-            Copy
-          </button>
         </div>
-        <code className={styles.cidText}>{result.cid}</code>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <code className={styles.cidText}>{result.cid}</code>
+        </div>
       </div>
 
       <div className={styles.linkSection}>
