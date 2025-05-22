@@ -1,40 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# ShareBox - UCAN File Sharing Platform
 
-## Getting Started
+ShareBox is a modern web application built with Next.js that enables secure file sharing using Storacha and UCANs (User Controlled Authorization Networks). It provides a simple interface for uploading files and sharing them with specific permissions.
 
-First, run the development server:
+## Features
+
+- Secure file uploads to IPFS via Storacha
+- Modern, responsive UI with Tailwind CSS
+- Real-time upload status and feedback
+- File validation and error handling
+- IPFS gateway integration for easy file access
+- UCAN-based authorization system
+
+## Prerequisites
+
+- npm or yarn
+- Storacha account and credentials
+
+## Setup
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Dhruv-Varshney-developer/ShareBox-Storacha
+cd sharebox
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Set up Web3.Storage credentials:
+
+First, install the Web3.Storage CLI:
+
+```bash
+npm install -g @web3-storage/w3cli
+```
+
+Then, generate your credentials:
+
+```bash
+# Login to Web3.Storage
+w3 login your@email.com
+
+# List your spaces
+w3 space ls
+
+# Use a space
+w3 space use <space_did>
+
+# Create a key and copy the output
+w3 key create
+
+# Create a delegation and copy the output
+w3 delegation create <the_did_from_previous_step> --base64
+
+# or if the output is truncated in terminal, add it to proof.txt and then copy it from there:
+w3 delegation create <the_did_from_previous_step> --base64  >> proof.txt
+
+
+
+```
+
+4. Create a `.env.local` file in the root directory and add your Web3.Storage credentials:
+
+```env
+STORACHA_KEY=<your_key_from_w3_key_create>
+STORACHA_PROOF=<your_delegation_from_w3_delegation_create>
+```
+
+## Development
+
+Run the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Project Structure
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+- `/components` - React components
+- `/pages` - Next.js pages and API routes
+- `/lib` - Utility functions and Web3.Storage client setup
+- `/styles` - CSS modules and global styles
+- `/utils` - Helper functions
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## Technologies Used
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [Next.js](https://nextjs.org/) - React framework
+- [Storacha](https://docs.storacha.network/) - Decentralized storage
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+This project is licensed under the MIT License - see the LICENSE file for details.
