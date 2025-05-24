@@ -1,4 +1,3 @@
-// sharebox/pages/index.js
 import Head from "next/head";
 import { useState } from "react";
 import FileUploader from "../components/FileUploader";

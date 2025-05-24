@@ -1,4 +1,3 @@
-// sharebox/components/FileUploader.js
 import { useState } from "react";
 import { validateFile } from "../utils/fileHelpers";
 

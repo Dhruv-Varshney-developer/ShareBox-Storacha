@@ -1,4 +1,3 @@
-// sharebox/components/UploadResult.js
 import { formatFileSize } from "../utils/fileHelpers";
 
 export default function UploadResult({ result }) {
