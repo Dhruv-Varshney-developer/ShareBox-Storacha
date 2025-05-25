@@ -1,11 +1,14 @@
+import FileUploader from "@/components/FileUploader";
+import PermissionForm from "@/components/PermissionForm";
+import ShareLink from "@/components/ShareLink";
+import UploadResult from "@/components/UploadResult";
 import Head from "next/head";
 import { useState } from "react";
-import FileUploader from "../components/FileUploader";
-import UploadResult from "../components/UploadResult";
 
 export default function Home() {
   const [uploadResult, setUploadResult] = useState(null);
   const [globalError, setGlobalError] = useState(null);
+  const [shareLink, setShareLink] = useState(null);
 
   const handleUploadSuccess = (result) => {
     setUploadResult(result);
@@ -44,7 +47,15 @@ export default function Home() {
           onUploadSuccess={handleUploadSuccess}
           onUploadError={handleUploadError}
         />
-
+        {uploadResult && (
+          <>
+            <PermissionForm
+              cid={uploadResult.cid}
+              onGenerateLink={setShareLink}
+            />
+            <ShareLink shareLink={shareLink} />
+          </>
+        )}
         <UploadResult result={uploadResult} />
       </main>
 
