@@ -4,36 +4,62 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
+
   try {
     const { cid, permission, expiration } = req.body;
 
-    const validPermission = ['read', 'download', 'edit'];
-
-    if(!validPermission.includes(permission)){
-        return res.status(400).json({
-            error: `Invalid permission. Use: ${validPermission.join(', ')}` 
-        })
+    // Validate input
+    if (!cid || typeof cid !== 'string') {
+      return res.status(400).json({ error: "Missing or invalid CID" });
     }
-    const client = await initStorachaClient();
 
-    const shareData = await createShareableLink( client, {
+    const validPermissions = ['read', 'download', 'edit'];
+    if (!validPermissions.includes(permission)) {
+      return res.status(400).json({
+        error: `Invalid permission. Must be one of: ${validPermissions.join(', ')}`
+      });
+    }
+
+    // Initialize client
+    const client = await initStorachaClient();
+    if (!client) {
+      throw new Error("Failed to initialize Storacha client");
+    }
+
+    // Create shareable link
+    const shareData = await createShareableLink(client, {
       cid,
       permission,
-      expiration: expiration || undefined,
+      expiration: expiration ? Number(expiration) : undefined, // Ensure number if provided
     });
 
+    // Return success response
     return res.status(200).json({
       success: true,
-      shareData
+      data: {
+        url: shareData.url,
+        cid: shareData.cid,
+        permission: shareData.permission,
+        expiration: shareData.expiration || null,
+        createdAt: new Date().toISOString()
+      }
     });
+
   } catch (error) {
     console.error("API Error generating share link:", error);
+    
+
+    let errorMessage = "Failed to generate share link";
+    if (error.message.includes("Invalid CID")) {
+      errorMessage = "Invalid content identifier";
+    } else if (error.message.includes("No current space")) {
+      errorMessage = "Storage space not configured";
+    }
+
     return res.status(500).json({
       success: false,
-      error: "Failed to generate share link",
-      details:
-        error.message ||
-        "An unexpected error occurred while generating the share link.",
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 }
