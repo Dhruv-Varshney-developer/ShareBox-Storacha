@@ -20,9 +20,8 @@
 
 ## ⚙️ Prerequisites
 
-* Node.js (v16+)
 * npm or yarn
-* A Web3.Storage account
+* Storacha account and credentials
 
 ---
 
@@ -32,7 +31,7 @@
 
 ```bash
 git clone https://github.com/Dhruv-Varshney-developer/ShareBox-Storacha
-cd ShareBox-Storacha
+cd sharebox
 ```
 
 ---
@@ -49,7 +48,7 @@ yarn install
 
 ### 3. Set up Web3.Storage credentials
 
-Install the Web3.Storage CLI:
+Install the storacha CLI:
 
 ```bash
 npm install -g @web3-storage/w3cli
@@ -58,7 +57,7 @@ npm install -g @web3-storage/w3cli
 Then follow the steps below to generate and link your credentials:
 
 ```bash
-# Log in
+# Log in to storacha
 w3 login your@email.com
 
 # List spaces
@@ -70,12 +69,15 @@ w3 space use <space_did>
 # Create agent key (copy the output)
 w3 key create
 
-# Create delegation from space to agent (copy output or save in proof.txt)
+# Create a delegation and copy the output
+w3 delegation create <the_did_from_previous_step> --base64
+
+# Creates a UCAN delegation from the w3cli agent to the agent we generated above (copy output or save in proof.txt)
 w3 delegation create <the_did_from_key_create> --base64 >> proof.txt
 ```
 
-📎 **Attach image snippet** showing CLI output here.
-🗂 **File**: `w3cli-setup.png`
+### Difference between Agent DID and Space DID
+**A Space DID represents the user's data container, while an Agent DID is a delegated identity that acts on behalf of the Space to interact with Storacha**
 
 ---
 
