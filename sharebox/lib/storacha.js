@@ -13,12 +13,10 @@ export async function initStorachaClient() {
     const principal = Signer.parse(process.env.STORACHA_KEY);
     const store = new StoreMemory();
     const client = await Client.create({ principal, store });
-
     // Add proof that this agent has been delegated capabilities on the space
     const proof = await Proof.parse(process.env.STORACHA_PROOF);
     const space = await client.addSpace(proof);
     await client.setCurrentSpace(space.did());
-
     return client;
   } catch (error) {
     console.error("Error initializing Storacha client:", error);
@@ -47,5 +45,19 @@ export async function uploadFileToStoracha(client, file) {
   } catch (error) {
     console.error("Error uploading file to Storacha:", error);
     throw new Error("Failed to upload file: " + error.message);
+  }
+}
+
+
+
+export async function RevokeFileAccess(client, contentCID){
+  try{
+    console.log("Trying to revoke the file acess")
+  const result = await client.remove(contentCID, { shards: true });
+   console.log("The reovked result",result);
+   return result
+  }catch(error){
+    console.error("Error removing file from Storacha:", error);
+    throw new Error("Failed to revoke access to file: " + error.message);
   }
 }

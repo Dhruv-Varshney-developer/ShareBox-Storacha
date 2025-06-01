@@ -2,6 +2,7 @@ import Head from "next/head";
 import { useState } from "react";
 import FileUploader from "../components/FileUploader";
 import UploadResult from "../components/UploadResult";
+import RevokeAccess from "@/components/RevokeAccess";
 
 export default function Home() {
   const [uploadResult, setUploadResult] = useState(null);
@@ -45,7 +46,9 @@ export default function Home() {
           onUploadError={handleUploadError}
         />
 
-        <UploadResult result={uploadResult} />
+        <RevokeAccess />
+
+        {uploadResult!==null && <UploadResult result={uploadResult} />}
       </main>
 
       <footer className="w-full h-16 border-t border-gray-200 flex justify-center items-center text-sm text-gray-600">
