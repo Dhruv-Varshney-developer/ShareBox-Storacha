@@ -20,16 +20,15 @@ export default async function handler(req, res) {
       const client = await initStorachaClient();
   
       // Remove file from storacha
-      const revokeResult=await RevokeFileAccess(client,contentCID)
-  
+      const revokeResult = await RevokeFileAccess(client,contentCID)
+      console.log("The revoke result is", revokeResult)
       // Clean up temporary file
       return res.status(200).json({
-        success: true,
-        data: "Removed file successfully",
+        success: revokeResult,
+        data: revokeResult ? "Successfully removed the file from storacha console" : "Unable to remove the file from storacha console",
       });
     } catch (error) {
       console.error("Remove API error:", error);
-
       return res.status(500).json({
         success: false,
         error: errorMessage,

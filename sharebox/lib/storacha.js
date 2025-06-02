@@ -2,6 +2,7 @@ import * as Client from "@web3-storage/w3up-client";
 import { StoreMemory } from "@web3-storage/w3up-client/stores/memory";
 import * as Proof from "@web3-storage/w3up-client/proof";
 import { Signer } from "@web3-storage/w3up-client/principal/ed25519";
+import * as Link from 'multiformats/link'
 
 /**
  * Initialize authenticated Storacha client
@@ -48,16 +49,21 @@ export async function uploadFileToStoracha(client, file) {
   }
 }
 
-
+/**
+ * Revoke file access from storacha
+ * @param {Client} client - Authenticated Storacha client
+ * @param {string } contentCID the string of the format "baf...."
+ * @returns {Boolean} true -> access revoked / false -> An error occurs
+ */
 
 export async function RevokeFileAccess(client, contentCID){
   try{
-    console.log("Trying to revoke the file acess")
-  const result = await client.remove(contentCID, { shards: true });
-   console.log("The reovked result",result);
-   return result
+    console.log("Trying to revoke the file acess");
+   const parsedCidToBeRemoved=Link.parse(contentCID);
+   await client.remove(parsedCidToBeRemoved, { shards: true });
+   return true
   }catch(error){
     console.error("Error removing file from Storacha:", error);
-    throw new Error("Failed to revoke access to file: " + error.message);
-  }
+    return false;
+  }   
 }

@@ -25,8 +25,13 @@ export default function RevokeAccess() {
         },
         body: JSON.stringify({ contentCID: cid }),
       });
-      console.log("revoke",response)
-      setSuccess(`Access revoked for CID: ${cid}`);
+      const result = await response.json();
+      console.log("revoke result:", result);
+      if (result.success){
+        setSuccess(`Access revoked for CID: ${cid}`);
+      }else{
+        setSuccess(`Failed Attempt to revoke access for CID: ${cid}`)
+      }
       setCid("");
     } catch (err) {
       setError("Failed to revoke access. Please try again.");
