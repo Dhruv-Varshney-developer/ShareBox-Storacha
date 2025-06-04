@@ -2,6 +2,7 @@ import * as Client from "@web3-storage/w3up-client";
 import { StoreMemory } from "@web3-storage/w3up-client/stores/memory";
 import * as Proof from "@web3-storage/w3up-client/proof";
 import { Signer } from "@web3-storage/w3up-client/principal/ed25519";
+import * as Link from 'multiformats/link'
 
 /**
  * Initialize authenticated Storacha client
@@ -13,12 +14,10 @@ export async function initStorachaClient() {
     const principal = Signer.parse(process.env.STORACHA_KEY);
     const store = new StoreMemory();
     const client = await Client.create({ principal, store });
-
     // Add proof that this agent has been delegated capabilities on the space
     const proof = await Proof.parse(process.env.STORACHA_PROOF);
     const space = await client.addSpace(proof);
     await client.setCurrentSpace(space.did());
-
     return client;
   } catch (error) {
     console.error("Error initializing Storacha client:", error);
@@ -48,4 +47,23 @@ export async function uploadFileToStoracha(client, file) {
     console.error("Error uploading file to Storacha:", error);
     throw new Error("Failed to upload file: " + error.message);
   }
+}
+
+/**
+ * Revoke file access from storacha
+ * @param {Client} client - Authenticated Storacha client
+ * @param {string } contentCID the string of the format "baf...."
+ * @returns {Boolean} true -> access revoked / false -> An error occurs
+ */
+
+export async function RevokeFileAccess(client, contentCID){
+  try{
+    console.log("Trying to revoke the file acess");
+   const parsedCidToBeRemoved=Link.parse(contentCID);
+   await client.remove(parsedCidToBeRemoved, { shards: true });
+   return true
+  }catch(error){
+    console.error("Error removing file from Storacha:", error);
+    return false;
+  }   
 }
