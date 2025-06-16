@@ -35,10 +35,13 @@ export default function ShareFile() {
       console.log(data)
       const delegation = await Delegation.extract(new Uint8Array(data))
       console.log("The delegation is",delegation)
+      // const client=await Client.create();
+      // const space=await client.addSpace(delegation.ok)
+      // client.setCurrentSpace(space.did())
       if (!delegation.ok) {
         throw new Error('Failed to extract delegation', { cause: delegation.error })
       }else{
-        setSuccess(`The returned delegation CID is :${delegation.ok.asCID}`)
+        setSuccess(`The returned delegation CID is :${delegation.ok.asCID} and and new space has been created with the attached proof for you to perform your`)
       }
     } catch (err) {
       setError("Failed to allow access. Please try again.");

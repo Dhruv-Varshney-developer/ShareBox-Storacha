@@ -18,7 +18,6 @@ export default async function handler(req, res) {
     if (!userDID || deadline === 0) {
       throw new Error("Did not receive any userDID or deadline from the frontend");
     }
-
     const client = await initStorachaClient();
     const allowSpaceResult = await ShareFile(client, deadline, userDID);
     res.setHeader("Content-Type", "application/octet-stream");
