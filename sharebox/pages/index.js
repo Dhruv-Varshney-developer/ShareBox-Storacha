@@ -3,6 +3,7 @@ import { useState } from "react";
 import FileUploader from "../components/FileUploader";
 import UploadResult from "../components/UploadResult";
 import RevokeAccess from "@/components/RevokeAccess";
+import ShareFile from "@/components/ShareSpace";
 
 export default function Home() {
   const [uploadResult, setUploadResult] = useState(null);
@@ -45,7 +46,7 @@ export default function Home() {
           onUploadSuccess={handleUploadSuccess}
           onUploadError={handleUploadError}
         />
-
+        <ShareFile/>
         <RevokeAccess />
 
         {uploadResult!==null && <UploadResult result={uploadResult} />}
