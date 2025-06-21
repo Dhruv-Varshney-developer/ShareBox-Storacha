@@ -284,6 +284,253 @@ export async function uploadFileToStoracha(client, file) {
 
 ---
 
+---
+
+## Frontend: Revoking File Access
+
+Once your backend gives permission, the **frontend can remove certain files uploaded to the storacha console** using a simple file input.
+
+ **File:** `components/RevokeAccess.js`
+
+ **What it does:**
+
+* Let users pick a file cid
+* Send it to your backend to revoke access of that file
+
+
+ **After upload**,we show the user:
+
+* A success message
+
+---
+
+###  Revoke Access Flow (Backend)
+
+**File**: `/pages/api/removal.js`
+
+Here’s how the backend handles your uploaded file:
+
+1. **Receives the contentCid of the file to be revoked** from the frontend.
+2. **Initializes the Storacha client**.
+3. **Revokes the file** using `RevokeFileAccess`.
+4. **Cleans up** the temporary file and returns the **CID** (Content Identifier) on success.
+
+####  Here's what happens step-by-step:
+```js
+const handleRevoke = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!cid.trim() || (!cid.startsWith("bafy") &&  !cid.startsWith("bafk"))) {
+      setError("Please enter a valid CID.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch("/api/removal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ contentCID: cid }),
+      });
+      const result = await response.json();
+      console.log("revoke result:", result);
+      if (result.success){
+        setSuccess(`Access revoked for CID: ${cid}`);
+      }else{
+        setSuccess(`Failed Attempt to revoke access for CID: ${cid}`)
+      }
+      setCid("");
+    } catch (err) {
+      setError("Failed to revoke access. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+```
+
+#### ✅ Success response:
+
+```json
+{
+  "success": revokeResult,
+  "data": revokeResult ? "Successfully removed the file from storacha console" : "Unable to remove the file from storacha console",
+  }
+```
+
+**Revoke Function**
+```js
+/**
+ * Revoke file access from storacha
+ * @param {Client} client - Authenticated Storacha client
+ * @param {string } contentCID the string of the format "baf...."
+ * @returns {Boolean} true -> access revoked / false -> An error occurs
+ */
+
+export async function RevokeFileAccess(client, contentCID){
+  try{
+    console.log("Trying to revoke the file acess");
+   const parsedCidToBeRemoved=Link.parse(contentCID);
+   await client.remove(parsedCidToBeRemoved, { shards: true });
+   return true
+  }catch(error){
+    console.error("Error removing file from Storacha:", error);
+    return false;
+  }   
+}
+```
+
+ **Attached Screenshot:**
+![alt text](</sharebox/public/revoke.png>)
+
+---
+ 
+## Frontend: Granting Space Access Capabilities
+
+Once your backend gives permission, the **frontend can allow the agent with specific capabilities to authorise other agent a subset of the capabiilites it already has console** and returns a delegation they can pass to the other agents.
+
+ **File:** `components/ShareSpace.js`
+
+ **What it does:**
+
+* Let Users enter a Agent Did they want to give access to of those capabilities
+* Send it to your backend to generate proof for that delegation.
+
+
+ **After upload**,we show the user:
+
+* A success message along with the required delegation
+
+---
+
+###  Delegate Capabilities Flow (Backend)
+
+**File**: `/pages/api/share.js`
+
+Here’s how the backend handles your delegate actions:
+
+1. **Receives the did of the agent to be granted capabilitoes ** from the frontend.
+2. **Initializes the Storacha client**.
+3. **Delegates the capabilities and generates proof for those capabilities** using `ShareFile`.
+
+####  Here's what happens step-by-step:
+```js
+const [deadline, setDeadline] = useState(
+    Math.floor(Date.now() / 1000)
+  );
+
+const handleAddDidAccess = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!did.trim()) {
+      setError("Please enter a valid DID.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch("/api/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userDid: did, deadline : deadline }),
+      });
+      const data = await response.arrayBuffer();
+      console.log(data)
+      const delegation = await Delegation.extract(new Uint8Array(data))
+      console.log("The delegation is",delegation)
+      const client=await Client.create();
+      const space=await client.addSpace(delegation.ok)
+      client.setCurrentSpace(space.did())
+      if (!delegation.ok) {
+        throw new Error('Failed to extract delegation', { cause: delegation.error })
+      }else{
+        setSuccess(`The returned delegation CID is :${delegation.ok.asCID} and and new space has been created with the attached proof for you to perform your`)
+      }
+    } catch (err) {
+      setError("Failed to allow access. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+};
+```
+
+#### ✅ Success response:
+
+```js
+const allowSpaceResult = await ShareFile(client, deadline, userDID);
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.setHeader("Content-Disposition", "attachment; filename=delegation.car");
+return res.status(200).send(Buffer.from(allowSpaceResult));
+This is the delegation Proof in Buffer
+```
+
+**Share Capabilities Function**
+```js
+/**
+ * Grant the capabilities access to a particular DID (user) for a particular space.
+ * @param {*} client - Authenticated Storacha client
+ * @param {*} deadline - Till when is the shared user allowed to view the file
+ * @returns {Boolean} true -> access revoked / false -> An error occurs
+ */
+
+
+export async function ShareFile(client, deadline, clientDid){
+  try{
+  const spaceDid=client.agent.did();
+  const audience = DID.parse(clientDid);
+  const authorizer=client.agent;
+  const abilities = ['upload/add', 'upload/get','upload/remove'];
+  const capabilities=abilities.map((cap)=>{
+    return {
+      with: `${spaceDid}`,
+      can: cap,
+    }
+  })
+  const ucan = await Delegation.delegate({
+    issuer: authorizer.issuer,
+    audience,
+    capabilities,
+    expiration:deadline
+  }) 
+  const archive = await ucan.archive()
+  return archive.ok //returns the delegation object
+  }catch(error){
+    console.error("Error sharing file access priviliges:", error);
+    return false;
+  }   
+}
+
+
+```
+
+```js
+//The user entered DID is granted the following capabilities to the space which can be used or invoked using the proof generated from the above function
+
+const add = Upload.add.invoke({
+      issuer: bob,
+      audience: w3,
+      with: account.did(),
+      nb: {
+        root,
+      },
+    proofs: [ucan], //ucan generated above
+})
+
+
+```
+
+ **Attached Screenshot:**
+![alt text](</sharebox/public/sharecapability.png>)
+
+---
+
 ## Project Structure Overview
 
 ```

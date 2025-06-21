@@ -1,9 +1,11 @@
 import * as Client from "@web3-storage/w3up-client";
 import { StoreMemory } from "@web3-storage/w3up-client/stores/memory";
-import * as Proof from "@web3-storage/w3up-client/proof";
 import { Signer } from "@web3-storage/w3up-client/principal/ed25519";
-import * as Link from 'multiformats/link'
 import * as DID from '@ipld/dag-ucan/did'
+import * as Delegation from '@ucanto/core/delegation'
+import * as Link from 'multiformats/link'
+import * as Proof from "@web3-storage/w3up-client/proof";
+
 /**
  * Initialize authenticated Storacha client
  * @returns {Promise<Client>} Authenticated client instance
@@ -69,24 +71,40 @@ export async function RevokeFileAccess(client, contentCID){
 }
 
 /**
- * Grant access of the file to a particular DID (user).
+  * Grant the capabilities access to a particular DID (user) for a particular space.
  * @param {*} client - Authenticated Storacha client
  * @param {*} deadline - Till when is the shared user allowed to view the file
  * @returns {Boolean} true -> access revoked / false -> An error occurs
  */
 
 
-export async function ShareFile(client, deadline, did){
+export async function ShareFile(client, deadline, clientDid){
   try{
+  const spaceDid=client.agent.did();
+  console.log("THe space did is", spaceDid);
+  console.log("The client did is", clientDid, deadline)
+  const audience = DID.parse(clientDid);
+  const authorizer=client.agent;
   console.log("Trying to revoke the file acess");
-  const audience = DID.parse(did);
-  console.log("The user did is", audience);
-  const abilities = ['space/blob/add', 'space/index/add', 'filecoin/offer', 'upload/add']
-  const delegation = await client.createDelegation(audience, abilities, { deadline })
-  const archive = await delegation.archive()
+  const abilities = ['upload/add', 'upload/get','upload/remove'];
+  const capabilities=abilities.map((cap)=>{
+    return {
+      with: `${spaceDid}`,
+      can: cap,
+    }
+  })
+  const ucan = await Delegation.delegate({
+    issuer: authorizer.issuer,
+    audience,
+    capabilities,
+    expiration:deadline
+  }) 
+  const archive = await ucan.archive()
+  console.log("The ucan cid is",ucan.cid);
+  console.log(archive.ok)
   return archive.ok
   }catch(error){
-    console.error("Error removing file from Storacha:", error);
+    console.error("Error sharing file access priviliges:", error);
     return false;
   }   
 }

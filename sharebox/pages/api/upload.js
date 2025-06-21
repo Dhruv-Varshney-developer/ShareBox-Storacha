@@ -68,7 +68,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // Create File object for Storacha
     const file = new File(
       [fileContent],
       uploadedFile.originalFilename || uploadedFile.newFilename
