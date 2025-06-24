@@ -451,7 +451,7 @@ const handleAddDidAccess = async (e) => {
       if (!delegation.ok) {
         throw new Error('Failed to extract delegation', { cause: delegation.error })
       }else{
-        setSuccess(`The returned delegation CID is :${delegation.ok.asCID} and and new space has been created with the attached proof for you to perform your`)
+        setSuccess(`The returned delegation CID is :${delegation.ok.asCID} and new space has been created.`)
       }
     } catch (err) {
       setError("Failed to allow access. Please try again.");

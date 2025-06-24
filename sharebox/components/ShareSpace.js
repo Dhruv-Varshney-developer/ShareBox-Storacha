@@ -1,6 +1,6 @@
 import { useState } from "react";
-import * as Delegation from '@ucanto/core/delegation'
-import * as Client from '@web3-storage/w3up-client'
+import * as Delegation from "@ucanto/core/delegation";
+import * as Client from "@web3-storage/w3up-client";
 
 export default function ShareFile() {
   const [did, setDid] = useState("");
@@ -8,9 +8,7 @@ export default function ShareFile() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [deadline, setDeadline] = useState(
-    Math.floor(Date.now() / 1000)
-  );
+  const [deadline, setDeadline] = useState(Math.floor(Date.now() / 1000));
 
   const handleAddDidAccess = async (e) => {
     e.preventDefault();
@@ -29,19 +27,23 @@ export default function ShareFile() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userDid: did, deadline : deadline }),
+        body: JSON.stringify({ userDid: did, deadline: deadline }),
       });
       const data = await response.arrayBuffer();
-      console.log(data)
-      const delegation = await Delegation.extract(new Uint8Array(data))
-      console.log("The delegation is",delegation)
+      console.log(data);
+      const delegation = await Delegation.extract(new Uint8Array(data));
+      console.log("The delegation is", delegation);
       // const client=await Client.create();
       // const space=await client.addSpace(delegation.ok)
       // client.setCurrentSpace(space.did())
       if (!delegation.ok) {
-        throw new Error('Failed to extract delegation', { cause: delegation.error })
-      }else{
-        setSuccess(`The returned delegation CID is :${delegation.ok.asCID} and and new space has been created with the attached proof for you to perform your`)
+        throw new Error("Failed to extract delegation", {
+          cause: delegation.error,
+        });
+      } else {
+        setSuccess(
+          `The returned delegation CID is :${delegation.ok.asCID} and new space has been created.`
+        );
       }
     } catch (err) {
       setError("Failed to allow access. Please try again.");
@@ -64,7 +66,7 @@ export default function ShareFile() {
 
       {success && (
         <p className="text-green-600 bg-green-50 px-4 py-2 rounded border-l-4 border-green-600 mb-4">
-          {success.slice(0,100)}....
+          {success.slice(0, 100)}....
         </p>
       )}
 
@@ -89,9 +91,9 @@ export default function ShareFile() {
           type="datetime-local"
           id="deadline"
           className="p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
-          onChange={(e) =>{
+          onChange={(e) => {
             console.log(Math.floor(new Date(e.target.value).getTime() / 1000));
-            setDeadline(Math.floor(new Date(e.target.value).getTime() / 1000))
+            setDeadline(Math.floor(new Date(e.target.value).getTime() / 1000));
           }}
           disabled={loading}
         />
