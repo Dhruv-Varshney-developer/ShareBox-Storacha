@@ -12,16 +12,16 @@
 
 ## 🌟 Features
 
-* 🔐 Secure file uploads to IPFS via Storacha
-* 💡 UCAN-based authorization system
-* 🔗 IPFS gateway integration for file access
+- 🔐 Secure file uploads to IPFS via Storacha
+- 💡 UCAN-based authorization system
+- 🔗 IPFS gateway integration for file access
 
 ---
 
 ## ⚙️ Prerequisites
 
-* npm or yarn
-* Storacha account and credentials
+- npm or yarn
+- Storacha account and credentials
 
 ---
 
@@ -77,6 +77,7 @@ w3 delegation create <the_did_from_key_create> --base64 >> proof.txt
 ```
 
 ### Difference between Agent DID and Space DID
+
 **A Space DID represents the user's data container, while an Agent DID is a delegated identity that acts on behalf of the Space to interact with Storacha**
 
 ---
@@ -89,6 +90,13 @@ In the root of your project:
 STORACHA_KEY=<your_key_from_w3_key_create>
 STORACHA_PROOF=<your_delegation_from_w3_delegation_create>
 ```
+
+### 5. Start the application using:
+
+```
+npm run dev
+```
+
 ---
 
 ## 🗂 Step 1: Configure Environment Keys
@@ -103,7 +111,7 @@ STORACHA_KEY="MgCaNVLZHF8........SO_ON"
 STORACHA_PROOF="mAYIEAIMOEaJlcm9vd.....SO_ON"
 ```
 
-_____
+---
 
 ## Uploading Files to Storacha (2 Ways)
 
@@ -115,7 +123,7 @@ There are two ways you can upload files to your Storacha space:
 2. **UCAN Delegated Upload (recommended)**
    Give the user a **secure upload token** → User uploads **directly** to Storacha.
 
->  In this project, we’ll use the **delegation method**.
+> In this project, we’ll use the **delegation method**.
 
 ---
 
@@ -160,36 +168,34 @@ export async function initStorachaClient() {
 }
 ```
 
- **What this does:**
+**What this does:**
 
-* Loads your secret keys from `.env`
-* Authenticates a Storacha client
-* Grants it permission to upload on your behalf
+- Loads your secret keys from `.env`
+- Authenticates a Storacha client
+- Grants it permission to upload on your behalf
 
 ---
-
 
 ## Frontend: Uploading the File
 
 Once your backend gives permission, the **frontend can let users upload** using a simple file input.
 
- **File:** `components/FileUploader.js`
+**File:** `components/FileUploader.js`
 
- **What it does:**
+**What it does:**
 
-* Let users pick a file
-* Validate it (only PDFs allowed)
-* Send it to your backend for upload
+- Let users pick a file
+- Validate it (only PDFs allowed)
+- Send it to your backend for upload
 
+  **After upload**,we show the user:
 
- **After upload**,we show the user:
-
-* A success message
-* A link to their uploaded file
+- A success message
+- A link to their uploaded file
 
 ---
 
-###  Preparing Files for Upload to Storacha
+### Preparing Files for Upload to Storacha
 
 We support **two methods** of uploading files:
 
@@ -200,7 +206,7 @@ We support **two methods** of uploading files:
 
 ---
 
-###  Upload Flow (Backend)
+### Upload Flow (Backend)
 
 **File**: `/pages/api/upload.js`
 
@@ -214,7 +220,8 @@ Here’s how the backend handles your uploaded file:
 6. **Uploads the file** using `uploadFileToStoracha`.
 7. **Cleans up** the temporary file and returns the **CID** (Content Identifier) on success.
 
-####  Here's what happens step-by-step:
+#### Here's what happens step-by-step:
+
 ```js
 // Parse multipart form data sent from the frontend
 const form = formidable({ ... });
@@ -253,6 +260,7 @@ return res.status(200).json({ success: true, data: uploadResult });
 ```
 
 **Upload Function**
+
 ```js
 /**
  * Upload a file to Storacha
@@ -276,11 +284,11 @@ export async function uploadFileToStoracha(client, file) {
     console.error("Error uploading file to Storacha:", error);
     throw new Error("Failed to upload file: " + error.message);
   }
-} 
+}
 ```
 
- **Attached Screenshot:**
-![alt text](</sharebox/public/finalImage.png>)
+**Attached Screenshot:**
+![alt text](/sharebox/public/finalImage.png)
 
 ---
 
@@ -290,21 +298,20 @@ export async function uploadFileToStoracha(client, file) {
 
 Once your backend gives permission, the **frontend can remove certain files uploaded to the storacha console** using a simple file input.
 
- **File:** `components/RevokeAccess.js`
+**File:** `components/RevokeAccess.js`
 
- **What it does:**
+**What it does:**
 
-* Let users pick a file cid
-* Send it to your backend to revoke access of that file
+- Let users pick a file cid
+- Send it to your backend to revoke access of that file
 
+  **After upload**,we show the user:
 
- **After upload**,we show the user:
-
-* A success message
+- A success message
 
 ---
 
-###  Revoke Access Flow (Backend)
+### Revoke Access Flow (Backend)
 
 **File**: `/pages/api/removal.js`
 
@@ -315,41 +322,42 @@ Here’s how the backend handles your uploaded file:
 3. **Revokes the file** using `RevokeFileAccess`.
 4. **Cleans up** the temporary file and returns the **CID** (Content Identifier) on success.
 
-####  Here's what happens step-by-step:
+#### Here's what happens step-by-step:
+
 ```js
 const handleRevoke = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+  e.preventDefault();
+  setError("");
+  setSuccess("");
 
-    if (!cid.trim() || (!cid.startsWith("bafy") &&  !cid.startsWith("bafk"))) {
-      setError("Please enter a valid CID.");
-      return;
-    }
+  if (!cid.trim() || (!cid.startsWith("bafy") && !cid.startsWith("bafk"))) {
+    setError("Please enter a valid CID.");
+    return;
+  }
 
-    try {
-      setLoading(true);
-      const response = await fetch("/api/removal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ contentCID: cid }),
-      });
-      const result = await response.json();
-      console.log("revoke result:", result);
-      if (result.success){
-        setSuccess(`Access revoked for CID: ${cid}`);
-      }else{
-        setSuccess(`Failed Attempt to revoke access for CID: ${cid}`)
-      }
-      setCid("");
-    } catch (err) {
-      setError("Failed to revoke access. Please try again.");
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+    const response = await fetch("/api/removal", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ contentCID: cid }),
+    });
+    const result = await response.json();
+    console.log("revoke result:", result);
+    if (result.success) {
+      setSuccess(`Access revoked for CID: ${cid}`);
+    } else {
+      setSuccess(`Failed Attempt to revoke access for CID: ${cid}`);
     }
-  };
+    setCid("");
+  } catch (err) {
+    setError("Failed to revoke access. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 ```
 
 #### ✅ Success response:
@@ -362,6 +370,7 @@ const handleRevoke = async (e) => {
 ```
 
 **Revoke Function**
+
 ```js
 /**
  * Revoke file access from storacha
@@ -370,43 +379,42 @@ const handleRevoke = async (e) => {
  * @returns {Boolean} true -> access revoked / false -> An error occurs
  */
 
-export async function RevokeFileAccess(client, contentCID){
-  try{
+export async function RevokeFileAccess(client, contentCID) {
+  try {
     console.log("Trying to revoke the file acess");
-   const parsedCidToBeRemoved=Link.parse(contentCID);
-   await client.remove(parsedCidToBeRemoved, { shards: true });
-   return true
-  }catch(error){
+    const parsedCidToBeRemoved = Link.parse(contentCID);
+    await client.remove(parsedCidToBeRemoved, { shards: true });
+    return true;
+  } catch (error) {
     console.error("Error removing file from Storacha:", error);
     return false;
-  }   
+  }
 }
 ```
 
- **Attached Screenshot:**
-![alt text](</sharebox/public/revoke.png>)
+**Attached Screenshot:**
+![alt text](/sharebox/public/revoke.png)
 
 ---
- 
+
 ## Frontend: Granting Space Access Capabilities
 
 Once your backend gives permission, the **frontend can allow the agent with specific capabilities to authorise other agent a subset of the capabiilites it already has console** and returns a delegation they can pass to the other agents.
 
- **File:** `components/ShareSpace.js`
+**File:** `components/ShareSpace.js`
 
- **What it does:**
+**What it does:**
 
-* Let Users enter a Agent Did they want to give access to of those capabilities
-* Send it to your backend to generate proof for that delegation.
+- Let Users enter a Agent Did they want to give access to of those capabilities
+- Send it to your backend to generate proof for that delegation.
 
+  **After upload**,we show the user:
 
- **After upload**,we show the user:
-
-* A success message along with the required delegation
+- A success message along with the required delegation
 
 ---
 
-###  Delegate Capabilities Flow (Backend)
+### Delegate Capabilities Flow (Backend)
 
 **File**: `/pages/api/share.js`
 
@@ -416,48 +424,51 @@ Here’s how the backend handles your delegate actions:
 2. **Initializes the Storacha client**.
 3. **Delegates the capabilities and generates proof for those capabilities** using `ShareFile`.
 
-####  Here's what happens step-by-step:
+#### Here's what happens step-by-step:
+
 ```js
-const [deadline, setDeadline] = useState(
-    Math.floor(Date.now() / 1000)
-  );
+const [deadline, setDeadline] = useState(Math.floor(Date.now() / 1000));
 
 const handleAddDidAccess = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
+  e.preventDefault();
+  setError("");
+  setSuccess("");
 
-    if (!did.trim()) {
-      setError("Please enter a valid DID.");
-      return;
-    }
+  if (!did.trim()) {
+    setError("Please enter a valid DID.");
+    return;
+  }
 
-    try {
-      setLoading(true);
-      const response = await fetch("/api/share", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userDid: did, deadline : deadline }),
+  try {
+    setLoading(true);
+    const response = await fetch("/api/share", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userDid: did, deadline: deadline }),
+    });
+    const data = await response.arrayBuffer();
+    console.log(data);
+    const delegation = await Delegation.extract(new Uint8Array(data));
+    console.log("The delegation is", delegation);
+    const client = await Client.create();
+    const space = await client.addSpace(delegation.ok);
+    client.setCurrentSpace(space.did());
+    if (!delegation.ok) {
+      throw new Error("Failed to extract delegation", {
+        cause: delegation.error,
       });
-      const data = await response.arrayBuffer();
-      console.log(data)
-      const delegation = await Delegation.extract(new Uint8Array(data))
-      console.log("The delegation is",delegation)
-      const client=await Client.create();
-      const space=await client.addSpace(delegation.ok)
-      client.setCurrentSpace(space.did())
-      if (!delegation.ok) {
-        throw new Error('Failed to extract delegation', { cause: delegation.error })
-      }else{
-        setSuccess(`The returned delegation CID is :${delegation.ok.asCID} and new space has been created.`)
-      }
-    } catch (err) {
-      setError("Failed to allow access. Please try again.");
-    } finally {
-      setLoading(false);
+    } else {
+      setSuccess(
+        `The returned delegation CID is :${delegation.ok.asCID} and new space has been created.`
+      );
     }
+  } catch (err) {
+    setError("Failed to allow access. Please try again.");
+  } finally {
+    setLoading(false);
+  }
 };
 ```
 
@@ -472,6 +483,7 @@ This is the delegation Proof in Buffer
 ```
 
 **Share Capabilities Function**
+
 ```js
 /**
  * Grant the capabilities access to a particular DID (user) for a particular space.
@@ -480,54 +492,49 @@ This is the delegation Proof in Buffer
  * @returns {Boolean} true -> access revoked / false -> An error occurs
  */
 
-
-export async function ShareFile(client, deadline, clientDid){
-  try{
-  const spaceDid=client.agent.did();
-  const audience = DID.parse(clientDid);
-  const authorizer=client.agent;
-  const abilities = ['upload/add', 'upload/get','upload/remove'];
-  const capabilities=abilities.map((cap)=>{
-    return {
-      with: `${spaceDid}`,
-      can: cap,
-    }
-  })
-  const ucan = await Delegation.delegate({
-    issuer: authorizer.issuer,
-    audience,
-    capabilities,
-    expiration:deadline
-  }) 
-  const archive = await ucan.archive()
-  return archive.ok //returns the delegation object
-  }catch(error){
+export async function ShareFile(client, deadline, clientDid) {
+  try {
+    const spaceDid = client.agent.did();
+    const audience = DID.parse(clientDid);
+    const authorizer = client.agent;
+    const abilities = ["upload/add", "upload/get", "upload/remove"];
+    const capabilities = abilities.map((cap) => {
+      return {
+        with: `${spaceDid}`,
+        can: cap,
+      };
+    });
+    const ucan = await Delegation.delegate({
+      issuer: authorizer.issuer,
+      audience,
+      capabilities,
+      expiration: deadline,
+    });
+    const archive = await ucan.archive();
+    return archive.ok; //returns the delegation object
+  } catch (error) {
     console.error("Error sharing file access priviliges:", error);
     return false;
-  }   
+  }
 }
-
-
 ```
 
 ```js
 //The user entered DID is granted the following capabilities to the space which can be used or invoked using the proof generated from the above function
 
 const add = Upload.add.invoke({
-      issuer: bob,
-      audience: w3,
-      with: account.did(),
-      nb: {
-        root,
-      },
-    proofs: [ucan], //ucan generated above
-})
-
-
+  issuer: bob,
+  audience: w3,
+  with: account.did(),
+  nb: {
+    root,
+  },
+  proofs: [ucan], //ucan generated above
+});
 ```
 
- **Attached Screenshot:**
-![alt text](</sharebox/public/sharecapability.png>)
+**Attached Screenshot:**
+![alt text](/sharebox/public/sharecapability.png)
 
 ---
 
@@ -565,6 +572,4 @@ Open an issue if you want to propose a big feature or change before working on i
 
 Licensed under the [MIT License](LICENSE).
 
-
 ---
-
