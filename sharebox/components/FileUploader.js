@@ -169,7 +169,7 @@ export default function FileUploader({ onUploadSuccess, onUploadError }) {
                     or click to browse • Max 10MB
                   </p>
                   <p className="text-sm text-gray-500 mt-3">
-                    We'll handle it with electric precision ⚡
+                    We'll handle it with precision ⚡
                   </p>
                 </div>
               </>
