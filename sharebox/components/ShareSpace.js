@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Share2, Check, ArrowRight } from "lucide-react";
 import * as Delegation from "@ucanto/core/delegation";
 import * as Client from "@web3-storage/w3up-client";
 
@@ -7,7 +8,6 @@ export default function ShareFile() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [deadline, setDeadline] = useState(Math.floor(Date.now() / 1000));
 
   const handleAddDidAccess = async (e) => {
@@ -16,7 +16,7 @@ export default function ShareFile() {
     setSuccess("");
 
     if (!did.trim()) {
-      setError("Please enter a valid DID.");
+      setError("We need a valid DID to share with! 🎯");
       return;
     }
 
@@ -33,16 +33,14 @@ export default function ShareFile() {
       console.log(data);
       const delegation = await Delegation.extract(new Uint8Array(data));
       console.log("The delegation is", delegation);
-      // const client=await Client.create();
-      // const space=await client.addSpace(delegation.ok)
-      // client.setCurrentSpace(space.did())
+
       if (!delegation.ok) {
         throw new Error("Failed to extract delegation", {
           cause: delegation.error,
         });
       } else {
         setSuccess(
-          `The returned delegation CID is :${delegation.ok.asCID} and new space has been created.`
+          `🎉 Shared! The delegation CID is: ${delegation.ok.asCID} and new space has been created.`
         );
       }
     } catch (err) {
@@ -53,61 +51,88 @@ export default function ShareFile() {
   };
 
   return (
-    <div className="my-4 p-6 w-full rounded-xl bg-white shadow-md">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-        Share Space Access By Entering the DID
-      </h2>
+    <div className="group bg-gray-900/90 backdrop-blur-xl rounded-3xl border border-gray-700/50 p-8 shadow-2xl hover:shadow-green-500/10 transition-all duration-500 hover:scale-[1.01] hover:border-green-500/30">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl shadow-lg group-hover:shadow-green-500/30 transition-all duration-300">
+          <Share2 className="w-7 h-7 text-white" />
+        </div>
+        <div>
+          <h2 className="text-3xl font-bold text-white">Share Space</h2>
+          <p className="text-gray-400 text-sm mt-1">
+            Spread the love, share the access 💚
+          </p>
+        </div>
+      </div>
 
       {error && (
-        <p className="text-red-600 bg-red-50 px-4 py-2 rounded border-l-4 border-red-600 mb-4">
-          {error}
-        </p>
+        <div className="bg-red-900/30 border border-red-500/50 text-red-300 px-5 py-4 rounded-2xl mb-6 flex items-center gap-3 animate-shake backdrop-blur-sm">
+          <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+          <span className="font-medium">{error}</span>
+        </div>
       )}
 
       {success && (
-        <p className="text-green-600 bg-green-50 px-4 py-2 rounded border-l-4 border-green-600 mb-4">
-          {success.slice(0, 100)}....
-        </p>
+        <div className="bg-green-900/30 border border-green-500/50 text-green-300 px-5 py-4 rounded-2xl mb-6 flex items-center gap-3 animate-bounce backdrop-blur-sm">
+          <Check className="w-5 h-5 text-green-400" />
+          <span className="font-medium">{success.slice(0, 100)}...</span>
+        </div>
       )}
 
-      <form onSubmit={handleAddDidAccess} className="flex flex-col gap-4">
-        <label htmlFor="did" className="font-medium text-gray-700">
-          Enter the DID of the user:
-        </label>
-        <input
-          type="text"
-          id="did"
-          value={did}
-          onChange={(e) => setDid(e.target.value)}
-          placeholder="Enter the DID of the user"
-          className="p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
-          disabled={loading}
-        />
+      <form onSubmit={handleAddDidAccess} className="space-y-6">
+        <div>
+          <label className="block text-white font-bold mb-4 text-lg">
+            User DID
+          </label>
+          <input
+            type="text"
+            value={did}
+            onChange={(e) => setDid(e.target.value)}
+            placeholder="Enter the DID of the user"
+            className="w-full p-5 bg-gray-800/80 border border-gray-600 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 hover:bg-gray-800 text-lg backdrop-blur-sm"
+            disabled={loading}
+          />
+        </div>
 
-        <label htmlFor="deadline" className="font-medium text-gray-700">
-          Select Deadline:
-        </label>
-        <input
-          type="datetime-local"
-          id="deadline"
-          className="p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
-          onChange={(e) => {
-            console.log(Math.floor(new Date(e.target.value).getTime() / 1000));
-            setDeadline(Math.floor(new Date(e.target.value).getTime() / 1000));
-          }}
-          disabled={loading}
-        />
+        <div>
+          <label className="block text-white font-bold mb-4 text-lg">
+            Access Deadline
+          </label>
+          <input
+            type="datetime-local"
+            className="w-full p-5 bg-gray-800/80 border border-gray-600 rounded-2xl text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 hover:bg-gray-800 text-lg backdrop-blur-sm"
+            onChange={(e) => {
+              console.log(
+                Math.floor(new Date(e.target.value).getTime() / 1000)
+              );
+              setDeadline(
+                Math.floor(new Date(e.target.value).getTime() / 1000)
+              );
+            }}
+            disabled={loading}
+          />
+        </div>
 
         <button
           type="submit"
-          className={`px-5 py-3 rounded text-white font-medium transition ${
-            loading || !did.trim()
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-orange-600 hover:bg-orange-700"
-          }`}
           disabled={!did.trim() || loading}
+          className={`w-full py-5 px-8 rounded-2xl font-bold text-white transition-all duration-500 flex items-center justify-center gap-3 text-lg ${
+            loading || !did.trim()
+              ? "bg-gray-700 cursor-not-allowed"
+              : "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 transform hover:scale-[1.02] shadow-xl hover:shadow-green-500/30"
+          }`}
         >
-          {loading ? "Sharing..." : "Share The Space Access"}
+          {loading ? (
+            <>
+              <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+              Sharing the magic...
+            </>
+          ) : (
+            <>
+              <Share2 className="w-6 h-6" />
+              Share The Space Access
+              <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
+            </>
+          )}
         </button>
       </form>
     </div>

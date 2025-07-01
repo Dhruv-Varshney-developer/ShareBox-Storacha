@@ -12,13 +12,15 @@
     "@web3-storage/access": "^20.3.0",
     "@web3-storage/w3up-client": "^17.3.0",
     "formidable": "^3.5.4",
+    "lucide-react": "^0.525.0",
     "next": "^15.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "zod": "^3.25.56"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.7",
-    "tailwindcss": "^4.1.7"
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17"
   }
 }
