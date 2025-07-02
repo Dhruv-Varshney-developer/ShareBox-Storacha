@@ -6,7 +6,8 @@
 
 ### TL;DR for Beginners 🧑‍💻
 
-**What this does:** You upload a file through the frontend → it gets processed and sent to Storacha → you get a **CID** to access the file later.
+**What this does:** You upload a file through the frontend → it gets processed and sent to Storacha → you get a **CID** to access the file later. 
+*[Checkout ShareBox blog post for more beginner friendly details!](https://medium.com/@akashjana663/sharebox-ucan-powered-file-sharing-platform-built-on-storacha-5c003bbc7c7f)*
 
 ---
 
@@ -399,7 +400,7 @@ export async function RevokeFileAccess(client, contentCID) {
 
 ## Frontend: Granting Space Access Capabilities
 
-Once your backend gives permission, the **frontend can allow the agent with specific capabilities to authorise other agent a subset of the capabiilites it already has console** and returns a delegation they can pass to the other agents.
+Once your backend gives permission, the **frontend can allow the agent with specific capabilities to authorise other agent a subset of the capabilities it already has console** and returns a delegation they can pass to the other agents.
 
 **File:** `components/ShareSpace.js`
 
@@ -420,7 +421,7 @@ Once your backend gives permission, the **frontend can allow the agent with spec
 
 Here’s how the backend handles your delegate actions:
 
-1. **Receives the did of the agent to be granted capabilitoes ** from the frontend.
+1. **Receives the did of the agent to be granted capabilitoes** from the frontend.
 2. **Initializes the Storacha client**.
 3. **Delegates the capabilities and generates proof for those capabilities** using `ShareFile`.
 
@@ -513,7 +514,7 @@ export async function ShareFile(client, deadline, clientDid) {
     const archive = await ucan.archive();
     return archive.ok; //returns the delegation object
   } catch (error) {
-    console.error("Error sharing file access priviliges:", error);
+    console.error("Error sharing file access privileges:", error);
     return false;
   }
 }
